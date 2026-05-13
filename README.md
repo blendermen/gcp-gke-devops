@@ -1,4 +1,5 @@
-# gcp-gke-devops
+![Build Status](https://img.shields.io/github/actions/workflow/status/blendermen/azure-aks-devops/main.yml?branch=main)
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
 # Full GKE + GCP Deployment(Flask + React + PostgreSQL)
 
 ## Overview
