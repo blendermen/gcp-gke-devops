@@ -129,7 +129,7 @@ spec:
 
       containers:
       - name: backend
-        image: europe-central2-docker.pkg.dev/moja-zupa-gcp/moja-zupa-repo/backend:v4
+        image: europe-central2-docker.pkg.dev/moja-zupa-gcp/moja-zupa-repo/backend:latest
         
         imagePullPolicy: Always
         readinessProbe:
@@ -200,7 +200,7 @@ spec:
     spec:
       containers:
       - name: frontend
-        image: europe-central2-docker.pkg.dev/moja-zupa-gcp/moja-zupa-repo/frontend:v2
+        image: europe-central2-docker.pkg.dev/moja-zupa-gcp/moja-zupa-repo/frontend:latest
 
         imagePullPolicy: Always
 
