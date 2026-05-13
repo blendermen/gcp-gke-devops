@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # 1. Baza danych PostgreSQL
+  db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # 2. Backend API (Python/Flask)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: backend.Dockerfile
+    container_name: flask-backend
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - DB-HOST=db
+      - DB-NAME=postgres
+      - DB-USER=postgres
+      - DB-PASSWORD=password
+    ports:
+      - "5000:5000"
+
+  # 3. Frontend (React + Nginx)
+  # Uwaga: Używamy tego tylko, jeśli chcesz testować zbudowany obraz produkcyjny.
+  # Do deweloperki zazwyczaj używasz 'npm run dev' lokalnie.
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: frontend.Dockerfile
+    container_name: react-frontend
+    restart: always
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend

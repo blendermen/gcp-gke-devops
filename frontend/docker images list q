@@ -1,0 +1,53 @@
+[m[1mNAME[m
+    gcloud artifacts docker - manage Artifact Registry container images and
+        tags
+
+[m[1mSYNOPSIS[m
+    [1mgcloud artifacts docker[m [4mGROUP[m [[4mGCLOUD_WIDE_FLAG ...[m]
+
+[m[1mDESCRIPTION[m
+    To list images under repository [1mmy-repo[m, project [1mmy-project[m, in
+    [1mus-central1[m:
+
+        $ gcloud artifacts docker images list \
+          us-central1-docker.pkg.dev/my-project/my-repo
+
+    To delete image [1mbusy-box[m in [1mus-west1[m and all of its digests and tags:
+
+        $ gcloud artifacts docker images delete
+        us-west1-docker.pkg.dev/my-project/my-repository/busy-box
+
+    To add tag [1mmy-tag[m to image [1mbusy-box[m referenced by digest [1mabcxyz[m in
+    [1mus-west1[m:
+
+        $ gcloud artifacts docker tags add
+        us-west1-docker.pkg.dev/my-project/my-repository/busy-box@sha256:abcxyz
+        us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
+
+    To delete tag [1mmy-tag[m from image [1mbusy-box[m in [1mus-west1[m:
+
+        $ gcloud artifacts docker tags delete
+        us-west1-docker.pkg.dev/my-project/my-repository/busy-box:my-tag
+
+    To list tags for image [1mbusy-box[m in [1mus-west1[m:
+
+        $ gcloud artifacts docker tags list
+        us-west1-docker.pkg.dev/my-project/my-repository/busy-box
+
+[m[1mGCLOUD WIDE FLAGS[m
+    These flags are available to all commands: --help.
+
+    Run [1m$ gcloud help[m for details.
+
+[m[1mGROUPS[m
+    [1m[1;4mGROUP[1m[m is one of the following:
+
+     [1mimages[m
+        Manage Artifact Registry container images.
+
+     [1mtags[m
+        Manage Artifact Registry container image tags.
+
+     [1mupgrade[m
+        Commands to support Container Registry to Artifact Registry upgrade.
+[m
