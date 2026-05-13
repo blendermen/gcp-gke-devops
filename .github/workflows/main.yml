@@ -27,34 +27,44 @@ jobs:
       - name: Setup gcloud
         uses: google-github-actions/setup-gcloud@v2
 
-      # 3. Configure Docker auth for Artifact Registry
-      - name: Docker auth
-        run: gcloud auth configure-docker europe-central2-docker.pkg.dev
-
-      # 4. Build backend
-      - name: Build backend image
+      # 3. Install GKE auth plugin
+      - name: Install GKE auth plugin
         run: |
-          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }} -f backend/backend.Dockerfile ./backend
+          gcloud components install gke-gcloud-auth-plugin --quiet
 
-      # 5. Build frontend
-      - name: Build frontend image
+      # 4. Enable plugin
+      - name: Configure kubectl auth
         run: |
-          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }} -f frontend/frontend.Dockerfile ./frontend
+          echo "USE_GKE_GCLOUD_AUTH_PLUGIN=True" >> $GITHUB_ENV
 
-      # 6. Push images
-      - name: Push images
-        run: |
-          docker push europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }}
-          docker push europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }}
-
-      # 7. Get GKE credentials
+        # 5. Get GKE credentials
       - name: Get GKE credentials
         run: |
           gcloud container clusters get-credentials moja-zupa-gke \
             --region europe-central2-a \
             --project ${{ secrets.GCP_PROJECT_ID }}
 
-      # 8. Deploy to Kubernetes
+      # 6. Configure Docker auth for Artifact Registry
+      - name: Docker auth
+        run: gcloud auth configure-docker europe-central2-docker.pkg.dev
+
+      # 7. Build backend
+      - name: Build backend image
+        run: |
+          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }} -f backend/backend.Dockerfile ./backend
+
+      # 8. Build frontend
+      - name: Build frontend image
+        run: |
+          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }} -f frontend/frontend.Dockerfile ./frontend
+
+      # 9. Push images
+      - name: Push images
+        run: |
+          docker push europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }}
+          docker push europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }}
+
+      # 10. Deploy to Kubernetes
       - name: Deploy to GKE
         run: |
           sed -i "s|backend:latest|backend:${{ github.sha }}|g" gcp-deployment.yaml
