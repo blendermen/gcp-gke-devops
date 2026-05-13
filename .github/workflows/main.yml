@@ -34,12 +34,12 @@ jobs:
       # 4. Build backend
       - name: Build backend image
         run: |
-          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }} ./backend
+          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/backend:${{ github.sha }} -f backend/Dockerfile ./backend
 
       # 5. Build frontend
       - name: Build frontend image
         run: |
-          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }} ./frontend
+          docker build -t europe-central2-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/moja-zupa-repo/frontend:${{ github.sha }} -f frontend/Dockerfile ./frontend
 
       # 6. Push images
       - name: Push images
