@@ -1,9 +1,12 @@
 # gcp-gke-devops
-# Full GKE + GCP Deployment Guide (Flask + React + PostgreSQL)
+# Full GKE + GCP Deployment(Flask + React + PostgreSQL)
 
 ## Overview
 
 This document describes the complete process of deploying a fullstack application to Google Kubernetes Engine (GKE).
+
+
+<img width="524" alt="Screenshot_20260513_131330" src="https://github.com/user-attachments/assets/667cddd2-034d-42bb-a5ca-46f4058e63d0" />
 
 Stack:
 
@@ -638,6 +641,79 @@ gcloud container clusters delete moja-zupa-gke \
 Most cost-efficient.
 
 ---
+
+## GitHub Actions + GCP (OIDC / Workload Identity Federation)
+
+```bash
+PROJECT_ID=moja-zupa-gcp
+PROJECT_NUMBER=$(gcloud projects describe $PROJECT_ID --format="value(projectNumber)")
+POOL_ID=github-pool
+PROVIDER_ID=github-provider
+SA_NAME=github-actions
+SA_EMAIL=$SA_NAME@$PROJECT_ID.iam.gserviceaccount.com
+REPO=blendermen/gcp-gke-devops
+```
+
+Create Service Account
+```bash
+cloud iam service-accounts create github-actions \
+  --project=$PROJECT_ID \
+  --display-name="GitHub Actions CI"
+```
+
+Add new roles to the newly created Service Account
+```bash
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/artifactregistry.writer"
+
+gcloud projects add-iam-policy-binding $PROJECT_ID \
+  --member="serviceAccount:$SA_EMAIL" \
+  --role="roles/container.developer"
+```
+
+Create Working Identity Federation
+```bash
+gcloud iam workload-identity-pools create $POOL_ID \
+  --project=$PROJECT_ID \
+  --location="global" \
+  --display-name="GitHub pool"
+```
+
+Create Provider
+```bash
+gcloud iam workload-identity-pools providers create-oidc $PROVIDER_ID \
+  --project=$PROJECT_ID \
+  --location="global" \
+  --workload-identity-pool=$POOL_ID \
+  --display-name="GitHub provider" \
+  --issuer-uri="https://token.actions.githubusercontent.com" \
+  --attribute-mapping="google.subject=assertion.sub,attribute.repository=assertion.repository" \
+  --attribute-condition="assertion.repository=='$REPO'"
+```
+
+Bind SA to GitHub
+```bash
+gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
+  --project=$PROJECT_ID \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principalSet://iam.googleapis.com/projects/$PROJECT_NUMBER/locations/global/workloadIdentityPools/$POOL_ID/attribute.repository/$REPO"
+```
+
+Add binding
+```bash
+gcloud iam service-accounts add-iam-policy-binding $SA_EMAIL \
+  --role="roles/iam.serviceAccountTokenCreator" \
+  --member="serviceAccount:$SA_EMAIL"
+```
+
+In Github repo settings add new secrets
+```bash
+GCP_PROJECT_ID = moja-zupa-gcp
+GCP_WIF_PROVIDER = projects/PROJECT_NUMBER/locations/global/workloadIdentityPools/github-pool/providers/github-provider
+GCP_SERVICE_ACCOUNT = github-actions@moja-zupa-gcp.iam.gserviceaccount.com
+```
+
 
 # Final Result
 
